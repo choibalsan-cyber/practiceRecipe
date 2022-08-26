@@ -5,7 +5,7 @@ module.exports = {
   mode: "development",
   entry: "./src/js/index.js",
   output: {
-    filename: "main.[contenthash].js",
+    filename: "js/main.[contenthash].js",
     path: path.resolve(__dirname, "docs"),
   },
   plugins: [
