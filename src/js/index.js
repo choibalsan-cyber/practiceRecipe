@@ -1,6 +1,8 @@
 import Search from "./model/Search";
 import { elements, renderLoader, clearLoader } from "./view/base";
 import * as searchView from "./view/searchView";
+import * as recipeView from "./view/recipeView";
+import Recipe from "./model/Recipe";
 
 /**
  * WEB APP STATEMENT
@@ -49,3 +51,35 @@ elements.searchForm.addEventListener("submit", (e) => {
   e.preventDefault();
   controllerSearch();
 });
+
+elements.pageButtons.addEventListener("click", (e) => {
+  const btn = e.target.closest(".btn-inline");
+  if (btn) {
+    const gotoPageNumber = parseInt(btn.dataset.goto, 10);
+    searchView.clearSearchList();
+    searchView.renderRecipes(state.search.recipes, gotoPageNumber);
+  }
+});
+
+/**
+ * Жорын контроллер
+ */
+
+const controllerRecipe = async () => {
+  // 1. URL-с id-г авна
+  const id = recipeView.getId();
+  // 2. Жорын обьект үүсгэнэ
+  state.recipe = new Recipe(id);
+
+  // 3. Дэлгэцийн UI бэлтгэнэ
+  // 4. Жороо татаж авчирна
+  await state.recipe.getRecipe();
+
+  // 5. Жорыг хийх хугацаа болон жорын найрлагийг тооцоолно
+  state.recipe.calcTime();
+  state.recipe.calcHuniiToo();
+  // 6. Дэлгэцэнд үзүүлнэ
+  console.log(state.recipe);
+};
+
+window.addEventListener("hashchange", controllerRecipe);
