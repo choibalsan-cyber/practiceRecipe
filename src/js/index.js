@@ -3,6 +3,8 @@ import { elements, renderLoader, clearLoader } from "./view/base";
 import * as searchView from "./view/searchView";
 import * as recipeView from "./view/recipeView";
 import Recipe from "./model/Recipe";
+import List from "./model/List";
+import * as listView from "./view/listView";
 
 /**
  * WEB APP STATEMENT
@@ -68,18 +70,63 @@ elements.pageButtons.addEventListener("click", (e) => {
 const controllerRecipe = async () => {
   // 1. URL-с id-г авна
   const id = recipeView.getId();
-  // 2. Жорын обьект үүсгэнэ
-  state.recipe = new Recipe(id);
+  if (id) {
+    // 2. Жорын обьект үүсгэнэ
+    state.recipe = new Recipe(id);
 
-  // 3. Дэлгэцийн UI бэлтгэнэ
-  // 4. Жороо татаж авчирна
-  await state.recipe.getRecipe();
+    // 3. Дэлгэцийн UI бэлтгэнэ
+    recipeView.clearRecipe();
+    recipeView.highlightSelectedRecipe(id);
+    renderLoader(elements.recipeDiv);
 
-  // 5. Жорыг хийх хугацаа болон жорын найрлагийг тооцоолно
-  state.recipe.calcTime();
-  state.recipe.calcHuniiToo();
-  // 6. Дэлгэцэнд үзүүлнэ
-  console.log(state.recipe);
+    // 4. Жороо татаж авчирна
+    await state.recipe.getRecipe();
+    clearLoader();
+    // 5. Жорыг хийх хугацаа болон жорын найрлагийг тооцоолно
+    state.recipe.calcTime();
+    state.recipe.calcHuniiToo();
+    // 6. Дэлгэцэнд үзүүлнэ
+    recipeView.renderRecipe(state.recipe);
+  }
 };
 
-window.addEventListener("hashchange", controllerRecipe);
+// window.addEventListener("hashchange", controllerRecipe);
+// window.addEventListener("load", controllerRecipe);
+
+["hashchange", "load"].forEach((e) =>
+  window.addEventListener(e, controllerRecipe)
+);
+
+/**
+ * Найрлаганы контроллер
+ */
+
+const controllerList = () => {
+  // List обьект үүсгэнэ
+  state.list = new List();
+
+  listView.clearList();
+  state.recipe.ingredients.forEach((n) => {
+    const item = state.list.addItem(n);
+    listView.renderItem(item);
+  });
+};
+
+elements.recipeDiv.addEventListener("click", (e) => {
+  if (e.target.matches(".recipe__btn, .recipe__btn *")) {
+    controllerList();
+  }
+});
+
+// Delete list
+elements.listDiv.addEventListener("click", (e) => {
+  if (e.target.matches(".shopping__delete, .shopping__delete *")) {
+    const id = e.target.closest(".shopping__item").dataset.itemid;
+
+    // list обьектоос устгана
+    state.list.deleteItem(id);
+
+    // Дэлгэцнээс устгана
+    listView.deleteItem(id);
+  }
+});
