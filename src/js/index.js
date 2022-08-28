@@ -5,6 +5,8 @@ import * as recipeView from "./view/recipeView";
 import Recipe from "./model/Recipe";
 import List from "./model/List";
 import * as listView from "./view/listView";
+import Like from "./model/Like";
+import * as likeView from "./view/likeView";
 
 /**
  * WEB APP STATEMENT
@@ -16,6 +18,8 @@ import * as listView from "./view/listView";
 
 const state = {};
 
+// Лайк цэсийг хаах
+likeView.toggleHeart(0);
 // Хайлтын контроллер
 const controllerSearch = async () => {
   // 1. Хайлтын түлхүүр үгийг дэлгэцнээс авна
@@ -70,6 +74,8 @@ elements.pageButtons.addEventListener("click", (e) => {
 const controllerRecipe = async () => {
   // 1. URL-с id-г авна
   const id = recipeView.getId();
+  if (!state.like) state.like = new Like();
+
   if (id) {
     // 2. Жорын обьект үүсгэнэ
     state.recipe = new Recipe(id);
@@ -86,7 +92,7 @@ const controllerRecipe = async () => {
     state.recipe.calcTime();
     state.recipe.calcHuniiToo();
     // 6. Дэлгэцэнд үзүүлнэ
-    recipeView.renderRecipe(state.recipe);
+    recipeView.renderRecipe(state.recipe, state.like.isLiked(id));
   }
 };
 
@@ -112,12 +118,6 @@ const controllerList = () => {
   });
 };
 
-elements.recipeDiv.addEventListener("click", (e) => {
-  if (e.target.matches(".recipe__btn, .recipe__btn *")) {
-    controllerList();
-  }
-});
-
 // Delete list
 elements.listDiv.addEventListener("click", (e) => {
   if (e.target.matches(".shopping__delete, .shopping__delete *")) {
@@ -128,5 +128,38 @@ elements.listDiv.addEventListener("click", (e) => {
 
     // Дэлгэцнээс устгана
     listView.deleteItem(id);
+  }
+});
+
+/**
+ * Лайкны контроллер
+ */
+
+const controllerLike = () => {
+  if (!state.like) state.like = new Like();
+  const currentId = state.recipe.id;
+  if (state.like.isLiked(currentId)) {
+    state.like.deleteLike(currentId);
+    likeView.deleteLike(currentId);
+    likeView.likeBtn(false);
+  } else {
+    const newLike = state.like.addLike(
+      currentId,
+      state.recipe.title,
+      state.recipe.publisher,
+      state.recipe.image_url
+    );
+    // Дэлгэцэнд харуулах
+    likeView.renderLike(newLike);
+    likeView.likeBtn(true);
+  }
+
+  likeView.toggleHeart(state.like.getNumOfLikes());
+};
+elements.recipeDiv.addEventListener("click", (e) => {
+  if (e.target.matches(".recipe__btn, .recipe__btn *")) {
+    controllerList();
+  } else if (e.target.matches(".recipe__love, .recipe__love *")) {
+    controllerLike();
   }
 });
