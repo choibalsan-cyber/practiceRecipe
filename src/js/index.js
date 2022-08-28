@@ -18,8 +18,6 @@ import * as likeView from "./view/likeView";
 
 const state = {};
 
-// Лайк цэсийг хаах
-likeView.toggleHeart(0);
 // Хайлтын контроллер
 const controllerSearch = async () => {
   // 1. Хайлтын түлхүүр үгийг дэлгэцнээс авна
@@ -74,7 +72,6 @@ elements.pageButtons.addEventListener("click", (e) => {
 const controllerRecipe = async () => {
   // 1. URL-с id-г авна
   const id = recipeView.getId();
-  if (!state.like) state.like = new Like();
 
   if (id) {
     // 2. Жорын обьект үүсгэнэ
@@ -102,6 +99,17 @@ const controllerRecipe = async () => {
 ["hashchange", "load"].forEach((e) =>
   window.addEventListener(e, controllerRecipe)
 );
+
+window.addEventListener("load", (e) => {
+  // Шинээр апп ачаалагдахад like обьект үүсгэнэ
+  if (!state.like) state.like = new Like();
+
+  // LocalStorage дотор лайкалсан жор байгаа эсэхийг шалгана
+  likeView.toggleHeart(state.like.getNumOfLikes());
+
+  // Лайк байвал дэлгэц дээр харуулах
+  state.like.likes.forEach(likeView.renderLike);
+});
 
 /**
  * Найрлаганы контроллер

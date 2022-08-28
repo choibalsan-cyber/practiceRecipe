@@ -2,7 +2,6 @@ const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
-  mode: "development",
   entry: "./src/js/index.js",
   output: {
     filename: "js/main.[contenthash].js",
@@ -14,7 +13,6 @@ module.exports = {
       template: "src/index.html",
     }),
   ],
-  devtool: "inline-source-map",
   devServer: {
     static: "./docs",
   },
